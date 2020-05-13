@@ -11,6 +11,10 @@ type MysqlClient struct {
 	Ctx    context.Context
 }
 
+func (MysqlClient) Connect(opt map[string]interface{}) error {
+	panic("implement me")
+}
+
 func NewMysqlClient(uri string) *MysqlClient {
 	return &MysqlClient{client: uri}
 }

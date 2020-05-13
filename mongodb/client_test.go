@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	dbUri = "mongodb://localhost:27017"
+	dbUri = "mongodb://18.195.159.165:27017"
 	uid   = "5eb8e1f6f715a2494825d0ba"
 )
 
@@ -23,17 +23,23 @@ func (u *User) DataBase() string {
 	return "testDB"
 }
 
-func TestMgoClient_Connect(t *testing.T) {
+func getMgoClient() *MgoClient {
+	opt := map[string]interface{}{"uri":dbUri, "connecttimeout": 40}
 	mg := &MgoClient{}
-	mg.Connect(dbUri, 20)
-	err := mg.client.Ping(context.TODO(), readpref.Primary())
+	mg.Connect(opt)
+	return mg
+}
+
+func TestMgoClient_Connect(t *testing.T) {
+	mg := getMgoClient()
+	err := mg.client.Ping(context.TODO(), readpref.SecondaryPreferred())
 	assert.Nil(t, err)
 	assert.NotEmpty(t, mg.client)
+	mg.Close()
 }
 
 func TestMgoClient_getCollection(t *testing.T) {
-	mg := &MgoClient{}
-	mg.Connect(dbUri, 20)
+	mg := getMgoClient()
 	col := mg.getCollection("testDB", "user")
 	assert.NotNil(t, col)
 	assert.Equal(t, col.Name(), "user")
@@ -41,8 +47,7 @@ func TestMgoClient_getCollection(t *testing.T) {
 
 func TestMgoClient_FindOne(t *testing.T) {
 	u := &User{Username: "testUser", Nickname: "testNickname"}
-	mg := &MgoClient{}
-	mg.Connect(dbUri, 20)
+	mg := getMgoClient()
 	_, err := mg.FindOne("user", u)
 	assert.Nil(t, err, "Error %s", err)
 	assert.Equal(t, "testUser", u.Username, "The expected Username is testUser")
@@ -52,8 +57,7 @@ func TestMgoClient_FindOne(t *testing.T) {
 
 func TestMgoClient_Create(t *testing.T) {
 	u := &User{Username: "testUser", Nickname: "testNickname", ID: uid}
-	mg := &MgoClient{}
-	mg.Connect(dbUri, 20)
+	mg := getMgoClient()
 	res, err := mg.Create("user", u)
 	assert.NotNil(t, res)
 	assert.Nil(t, err)
@@ -61,8 +65,7 @@ func TestMgoClient_Create(t *testing.T) {
 
 func TestMgoClient_Retrieve(t *testing.T) {
 	u := &User{Username: "testUser", Nickname: "testNickname"}
-	mg := &MgoClient{}
-	mg.Connect(dbUri, 20)
+	mg := getMgoClient()
 	mg.FindOne("user", u)
 	assert.Equal(t, u.Username, "testUser", "The expected Username is testUser")
 	assert.Equal(t, u.Nickname, "testNickname", "The expected Nickname is testNickname")
@@ -72,8 +75,7 @@ func TestMgoClient_Retrieve(t *testing.T) {
 
 func TestMgoClient_UpdateOneById(t *testing.T) {
 	u := &User{Username: "testUser", Nickname: "testNickname"}
-	mg := &MgoClient{}
-	mg.Connect(dbUri, 20)
+	mg := getMgoClient()
 	res, err := mg.UpdateOneById("user", uid, u)
 	assert.Nil(t, err)
 	assert.True(t, res)
@@ -81,8 +83,7 @@ func TestMgoClient_UpdateOneById(t *testing.T) {
 
 func TestMgoClient_Update(t *testing.T) {
 	u := &User{Username: "testUser", Nickname: "testNickname", ID: uid}
-	mg := &MgoClient{}
-	mg.Connect(dbUri, 20)
+	mg := getMgoClient()
 	res, err := mg.Update("user", u)
 	assert.Nil(t, err)
 	assert.True(t, res)
@@ -90,8 +91,7 @@ func TestMgoClient_Update(t *testing.T) {
 
 func TestMgoClient_Delete(t *testing.T) {
 	u := &User{Username: "testUser", Nickname: "testNickname", ID: uid}
-	mg := &MgoClient{}
-	mg.Connect(dbUri, 20)
+	mg := getMgoClient()
 	res, err := mg.Delete("user", u)
 	assert.Nil(t, err)
 	assert.True(t, res)

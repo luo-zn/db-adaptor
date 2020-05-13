@@ -3,12 +3,10 @@ package mongodb
 import (
 	"context"
 	"github.com/luo-zn/db-adaptor/bases"
-	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 func NewMgoClient(uri string) *MgoClient {
@@ -21,21 +19,22 @@ type MgoClient struct {
 	ctx    context.Context
 }
 
-func (m *MgoClient) connect(uri string, timeout time.Duration) {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+func (m *MgoClient) connect(opt map[string]interface{}) error {
+	clientOpt,er1 := Map2ClientOptions(opt)
+	if er1 != nil {
+		return er1
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), *clientOpt.ConnectTimeout)
 	defer cancel() // bug may happen
-	if client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri)); err == nil {
+	if client, err := mongo.Connect(ctx, clientOpt); err == nil {
 		m.ctx = ctx
 		m.client = client
 	}
+	return nil
 }
 
-func (m *MgoClient) Connect(uri string, timeout time.Duration) {
-	if timeout == 0 {
-		timeout = 20 * time.Second
-	}
-	logrus.Info("Connect count!!!!!!!")
-	m.connect(uri, timeout)
+func (m *MgoClient) Connect(opt map[string]interface{}) error {
+	return m.connect(opt)
 }
 
 func (m *MgoClient) Close() error {
