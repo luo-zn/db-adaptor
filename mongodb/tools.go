@@ -2,7 +2,7 @@
 package mongodb
 
 import (
-	"db-adaptor/bases"
+	"github.com/luo-zn/db-adaptor/bases"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

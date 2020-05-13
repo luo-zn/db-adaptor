@@ -3,7 +3,7 @@ package mysql
 
 import (
 	"context"
-	"socail/db-adaptor/bases"
+	"github.com/luo-zn/db-adaptor/bases"
 )
 
 type MysqlClient struct {

@@ -1,7 +1,7 @@
 /* Create By Jenner.luo */
 package db_adaptor
 
-import "db-adaptor/bases"
+import "github.com/luo-zn/db-adaptor/bases"
 
 //DBClient
 type DBClient interface {

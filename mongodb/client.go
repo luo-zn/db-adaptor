@@ -2,7 +2,7 @@ package mongodb
 
 import (
 	"context"
-	"db-adaptor/bases"
+	"github.com/luo-zn/db-adaptor/bases"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

@@ -2,8 +2,8 @@
 package db_adaptor
 
 import (
-	"db-adaptor/mongodb"
-	"db-adaptor/mysql"
+	"github.com/luo-zn/db-adaptor/mongodb"
+	"github.com/luo-zn/db-adaptor/mysql"
 	"time"
 )
 
