@@ -2,9 +2,12 @@
 package mongodb
 
 import (
+	"bou.ke/monkey"
 	"context"
 	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -32,6 +35,12 @@ func getMgoClient() *MgoClient {
 }
 
 func TestMgoClient_Connect(t *testing.T) {
+	var mgc *mongo.Client
+	guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgc),"Ping",
+		func(_ *mongo.Client, ctx context.Context, rp *readpref.ReadPref) error{
+			return nil
+	})
+	defer guard.Unpatch()
 	mg := getMgoClient()
 	err := mg.client.Ping(context.TODO(), readpref.SecondaryPreferred())
 	assert.Nil(t, err)
