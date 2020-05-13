@@ -1,4 +1,4 @@
-/* Create By Jenner.luo */
+
 package db_adaptor
 
 import "github.com/luo-zn/db-adaptor/bases"
