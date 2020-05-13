@@ -3,7 +3,6 @@ package db_adaptor
 import (
 	"github.com/luo-zn/db-adaptor/mongodb"
 	"github.com/luo-zn/db-adaptor/mysql"
-	"time"
 )
 
 type DbAdaptor struct {
@@ -25,7 +24,6 @@ func (db *DbAdaptor) newClient(dbType string) {
 	} else {
 		db.Opt.DBType = "mongodb"
 		mgC := mongodb.NewMgoClient(db.Opt.Uri)
-		mgC.Connect(db.Opt.Uri, 40*time.Second)
 		db.DbC = mgC
 	}
 }

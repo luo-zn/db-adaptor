@@ -4,8 +4,10 @@ package mongodb
 import (
 	"bou.ke/monkey"
 	"context"
+	"github.com/luo-zn/db-adaptor/bases"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"reflect"
 	"testing"
@@ -55,7 +57,32 @@ func TestMgoClient_getCollection(t *testing.T) {
 	assert.Equal(t, col.Name(), "user")
 }
 
+func TestMgoClient_Create(t *testing.T) {
+	var mgc *mongo.Collection
+	guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgc),"InsertOne",
+		func(_ *mongo.Collection, ctx context.Context, document interface{},opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error){
+			return &mongo.InsertOneResult{InsertedID:uid}, nil
+		})
+	defer guard.Unpatch()
+	u := &User{Username: "testUser", Nickname: "testNickname", ID: uid}
+	mg := getMgoClient()
+	res, err := mg.Create("user", u)
+	assert.NotNil(t, res)
+	assert.Nil(t, err)
+}
+
 func TestMgoClient_FindOne(t *testing.T) {
+	var mgc *mongo.SingleResult
+	guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgc),"Decode",
+		func(_ *mongo.SingleResult, v interface{}) error{
+			obj, ok :=v.(User)
+			if ok{
+				obj.ID = uid
+				return nil
+			}
+			return bases.Error("Obj is not User struct!")
+		})
+	defer guard.Unpatch()
 	u := &User{Username: "testUser", Nickname: "testNickname"}
 	mg := getMgoClient()
 	_, err := mg.FindOne("user", u)
@@ -63,14 +90,6 @@ func TestMgoClient_FindOne(t *testing.T) {
 	assert.Equal(t, "testUser", u.Username, "The expected Username is testUser")
 	assert.Equal(t, "testNickname", u.Nickname, "The expected Nickname is testNickname")
 	assert.NotEmpty(t, u.ID, "User id is %s", u.ID)
-}
-
-func TestMgoClient_Create(t *testing.T) {
-	u := &User{Username: "testUser", Nickname: "testNickname", ID: uid}
-	mg := getMgoClient()
-	res, err := mg.Create("user", u)
-	assert.NotNil(t, res)
-	assert.Nil(t, err)
 }
 
 func TestMgoClient_Retrieve(t *testing.T) {
@@ -105,5 +124,4 @@ func TestMgoClient_Delete(t *testing.T) {
 	res, err := mg.Delete("user", u)
 	assert.Nil(t, err)
 	assert.True(t, res)
-	assert.Nil(t, mg.Close())
 }
