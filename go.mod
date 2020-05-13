@@ -1,4 +1,4 @@
-module db-adaptor
+module luo-lzn/db-adaptor
 
 go 1.14
 
