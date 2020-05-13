@@ -6,10 +6,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"testing"
+	"time"
 )
 
 var (
-	dbUri = "mongodb://18.195.159.165:27017"
+	dbUri = "mongodb://localhost:27017"
 	uid   = "5eb8e1f6f715a2494825d0ba"
 )
 
@@ -24,7 +25,7 @@ func (u *User) DataBase() string {
 }
 
 func getMgoClient() *MgoClient {
-	opt := map[string]interface{}{"uri":dbUri, "connecttimeout": 40}
+	opt := map[string]interface{}{"uri":dbUri,"ctx_timeout": 40*time.Second}
 	mg := &MgoClient{}
 	mg.Connect(opt)
 	return mg
@@ -35,7 +36,7 @@ func TestMgoClient_Connect(t *testing.T) {
 	err := mg.client.Ping(context.TODO(), readpref.SecondaryPreferred())
 	assert.Nil(t, err)
 	assert.NotEmpty(t, mg.client)
-	mg.Close()
+	assert.Nil(t,mg.Close())
 }
 
 func TestMgoClient_getCollection(t *testing.T) {
@@ -95,4 +96,5 @@ func TestMgoClient_Delete(t *testing.T) {
 	res, err := mg.Delete("user", u)
 	assert.Nil(t, err)
 	assert.True(t, res)
+	assert.Nil(t,mg.Close())
 }

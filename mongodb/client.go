@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 func NewMgoClient(uri string) *MgoClient {
@@ -24,7 +25,11 @@ func (m *MgoClient) connect(opt map[string]interface{}) error {
 	if er1 != nil {
 		return er1
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), *clientOpt.ConnectTimeout)
+	ctxTimeout, ok := opt["ctx_timeout"].(time.Duration)
+	if !ok {
+		ctxTimeout = 20*time.Second
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), ctxTimeout)
 	defer cancel() // bug may happen
 	if client, err := mongo.Connect(ctx, clientOpt); err == nil {
 		m.ctx = ctx
