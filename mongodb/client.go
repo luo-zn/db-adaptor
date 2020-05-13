@@ -21,13 +21,13 @@ type MgoClient struct {
 }
 
 func (m *MgoClient) connect(opt map[string]interface{}) error {
-	clientOpt,er1 := Map2ClientOptions(opt)
+	clientOpt, er1 := Map2ClientOptions(opt)
 	if er1 != nil {
 		return er1
 	}
 	ctxTimeout, ok := opt["ctx_timeout"].(time.Duration)
 	if !ok {
-		ctxTimeout = 20*time.Second
+		ctxTimeout = 20 * time.Second
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), ctxTimeout)
 	defer cancel() // bug may happen

@@ -1,4 +1,3 @@
-
 package bases
 
 import "fmt"

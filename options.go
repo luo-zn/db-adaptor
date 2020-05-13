@@ -1,4 +1,3 @@
-
 package db_adaptor
 
 import "time"

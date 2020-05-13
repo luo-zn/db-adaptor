@@ -1,4 +1,3 @@
-
 package mongodb
 
 import (
@@ -29,14 +28,14 @@ func BsonMarshal(e interface{}) ([]byte, error) {
 
 //Map2ClientOptions convert json to ClientOptions of mongo-driver.
 // It return *options.ClientOptions, error
-func Map2ClientOptions(opt map[string]interface{}) (*options.ClientOptions, error){
+func Map2ClientOptions(opt map[string]interface{}) (*options.ClientOptions, error) {
 	optByte, er1 := json.Marshal(opt)
-	if er1 != nil{
+	if er1 != nil {
 		return nil, er1
 	}
 	op := options.Client()
 	er2 := json.Unmarshal(optByte, &op)
-	if er2 != nil{
+	if er2 != nil {
 		return nil, er2
 	}
 	uri := op.GetURI()

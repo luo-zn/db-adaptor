@@ -25,7 +25,7 @@ func (u *User) DataBase() string {
 }
 
 func getMgoClient() *MgoClient {
-	opt := map[string]interface{}{"uri":dbUri,"ctx_timeout": 40*time.Second}
+	opt := map[string]interface{}{"uri": dbUri, "ctx_timeout": 40 * time.Second}
 	mg := &MgoClient{}
 	mg.Connect(opt)
 	return mg
@@ -36,7 +36,7 @@ func TestMgoClient_Connect(t *testing.T) {
 	err := mg.client.Ping(context.TODO(), readpref.SecondaryPreferred())
 	assert.Nil(t, err)
 	assert.NotEmpty(t, mg.client)
-	assert.Nil(t,mg.Close())
+	assert.Nil(t, mg.Close())
 }
 
 func TestMgoClient_getCollection(t *testing.T) {
@@ -96,5 +96,5 @@ func TestMgoClient_Delete(t *testing.T) {
 	res, err := mg.Delete("user", u)
 	assert.Nil(t, err)
 	assert.True(t, res)
-	assert.Nil(t,mg.Close())
+	assert.Nil(t, mg.Close())
 }
