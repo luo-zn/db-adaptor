@@ -30,3 +30,7 @@ func (MysqlClient) Update(tb string, e bases.Entity) (bool, error) {
 func (MysqlClient) Delete(tb string, e bases.Entity) (bool, error) {
 	panic("implement me")
 }
+
+func (MysqlClient) Close() error {
+	panic("implement me")
+}

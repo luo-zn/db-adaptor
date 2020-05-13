@@ -38,7 +38,7 @@ func (m *MgoClient) Connect(uri string, timeout time.Duration) {
 	m.connect(uri, timeout)
 }
 
-func (m *MgoClient) close() error {
+func (m *MgoClient) Close() error {
 	return m.client.Disconnect(m.ctx)
 }
 
