@@ -52,7 +52,6 @@ func (m *MgoClient) getCollection(db string, tb string) *mongo.Collection {
 
 func (m *MgoClient) FindOne(tb string, e bases.Entity) (bases.Entity, error) {
 	defer bases.Recover()
-	defer m.Close()
 	filter, er1 := bson.Marshal(e)
 	//filter,er1 := BsonMarshal(e)
 	if er1 != nil {
@@ -83,7 +82,6 @@ func (m *MgoClient) UpdateOneById(tb string, ids string, u bases.Entity) (bool, 
 
 func (m *MgoClient) DeleteOne(tb string, e bases.Entity) (bool, error) {
 	defer bases.Recover()
-	defer m.Close()
 	f, er1 := bson.Marshal(e)
 	if er1 != nil {
 		return false, er1
@@ -98,7 +96,6 @@ func (m *MgoClient) DeleteOne(tb string, e bases.Entity) (bool, error) {
 func (m *MgoClient) Create(tb string, e bases.Entity) (interface{}, error) {
 	var err error
 	defer bases.Recover()
-	defer m.Close()
 	collection := m.getCollection(e.DataBase(), tb)
 	res, err := collection.InsertOne(context.TODO(), e)
 	if err == nil {

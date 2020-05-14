@@ -157,4 +157,6 @@ func TestMgoClient(t *testing.T)  {
 		assert.Nil(t, err)
 		assert.True(t, res)
 	})
+
+	mg.Close()
 }
