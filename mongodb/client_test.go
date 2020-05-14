@@ -21,9 +21,10 @@ var (
 )
 
 type User struct {
-	ID       string `json:"id,omitempty" bson:"_id,omitempty"`
-	Username string `json:"username,omitempty" bson:"username,omitempty"`
-	Nickname string `json:"nickname,omitempty" bson:"nickname,omitempty"`
+	ID       		string `json:"id,omitempty" bson:"_id,omitempty"`
+	Username 		string `json:"username,omitempty" bson:"username,omitempty"`
+	Nickname 	 	string `json:"nickname,omitempty" bson:"nickname,omitempty"`
+	Region       	map[string]string `json:"region,omitempty" bson:"region,omitempty"`
 }
 
 func (u *User) DataBase() string {
@@ -127,6 +128,19 @@ func TestMgoClient(t *testing.T)  {
 			})
 		defer guard.Unpatch()
 		res, err := mg.Update("user", u)
+		assert.Nil(t, err)
+		assert.True(t, res)
+	})
+	t.Run("UpdateWithFilter", func(t *testing.T) {
+		guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgcoll),"UpdateOne",
+			func(_ *mongo.Collection, ctx context.Context, filter interface{}, update interface{},
+				opts ...*options.UpdateOptions) (*mongo.UpdateResult, error){
+				return &mongo.UpdateResult{MatchedCount:1,ModifiedCount:1}, nil
+			})
+		defer guard.Unpatch()
+		filter := map[string]interface{}{"username":u.Username, "nickname": u.Nickname}
+		u.Region = map[string]string{"country":"China", "city": "shenzhen"}
+		res, err := mg.UpdateOneWithFilter("user", filter, u)
 		assert.Nil(t, err)
 		assert.True(t, res)
 	})

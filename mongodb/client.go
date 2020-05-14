@@ -137,6 +137,22 @@ func (m *MgoClient) Update(tb string, e bases.Entity) (bool, error) {
 	return res.ModifiedCount == 1, nil
 }
 
+func (m *MgoClient) UpdateOneWithFilter(tb string, filter map[string]interface{}, e bases.Entity) (bool, error) {
+	defer bases.Recover()
+	mp, er := bases.Entity2Map(e)
+	if er != nil {
+		return false, er
+	}
+	delete(mp, "_id")
+	delete(mp, "id")
+	update, _ := bson.Marshal(bson.M{"$set": mp})
+	res, err := m.getCollection(e.DataBase(), tb).UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return false, err
+	}
+	return res.ModifiedCount == 1, nil
+}
+
 func (m *MgoClient) Delete(tb string, e bases.Entity) (bool, error) {
 	return m.DeleteOne(tb, e)
 }

@@ -30,6 +30,10 @@ func (MysqlClient) Update(tb string, e bases.Entity) (bool, error) {
 	panic("implement me")
 }
 
+func (MysqlClient) UpdateOneWithFilter(tb string, filter map[string]interface{}, e bases.Entity) (bool, error) {
+	panic("implement me")
+}
+
 func (MysqlClient) Delete(tb string, e bases.Entity) (bool, error) {
 	panic("implement me")
 }
