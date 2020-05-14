@@ -144,7 +144,6 @@ func (m *MgoClient) UpdateOneWithFilter(tb string, filter map[string]interface{}
 		return false, er
 	}
 	delete(mp, "_id")
-	delete(mp, "id")
 	update, _ := bson.Marshal(bson.M{"$set": mp})
 	res, err := m.getCollection(e.DataBase(), tb).UpdateOne(context.TODO(), filter, update)
 	if err != nil {
