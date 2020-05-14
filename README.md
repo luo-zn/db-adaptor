@@ -10,7 +10,7 @@ import "github.com/luo-zn/db-adaptor"
 var DBAdapt *db_adaptor.DbAdaptor
 
 func main(){
-    opt := db_adaptor.AdaptorOptions{Uri: "mongo://localhost:27017"}
+    opt := db_adaptor.AdaptorOptions{Uri: "mongo://localhost:27017",DBType:"mongodb"}
     DBAdapt = db_adaptor.NewDbAdaptor(&opt)
 }
 ```
