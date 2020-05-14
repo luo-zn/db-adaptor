@@ -14,12 +14,12 @@ func NewDbAdaptor(opts ...*AdaptorOptions) *DbAdaptor {
 	var adaptor DbAdaptor
 	clientOpt := MergeAdaptorOptions(opts...)
 	adaptor.Opt = clientOpt
-	adaptor.newClient(adaptor.Opt.DBType)
+	adaptor.newClient()
 	return &adaptor
 }
 
-func (db *DbAdaptor) newClient(dbType string) {
-	if dbType == "mysql" {
+func (db *DbAdaptor) newClient() {
+	if db.Opt.DBType == "mysql" {
 		db.DbC = mysql.NewMysqlClient(db.Opt.Uri)
 	} else {
 		db.Opt.DBType = "mongodb"

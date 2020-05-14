@@ -1,6 +1,37 @@
 # db-adaptor
 db-adaptor使用例子
 
+## 定义global
+```go
+package global
+
+import (
+	"fmt"
+	"github.com/luo-zn/db-adaptor"
+)
+
+var (
+	//DBUri Database connect string.
+	DBUri string
+	//DBAdapt Database Adaptor
+	DBAdapt *db_adaptor.DbAdaptor
+)
+
+func init() {
+	fmt.Print("Call global init.")
+}
+
+func Init(dbUri string)  {
+	DBUri = dbUri
+	opt := db_adaptor.AdaptorOptions{Uri: DBUri,DBType:"mongodb"}
+	DBAdapt = db_adaptor.NewDbAdaptor(&opt)
+	// or
+	//opt := db_adaptor.AdaptorOptions{Uri: DBUri}
+    //opt1 := db_adaptor.AdaptorOptions{DBType:"mongodb"}
+    //DBAdapt = db_adaptor.NewDbAdaptor(&opt,&opt1)
+}
+
+```
 ## 定义User model
 ```go
 package models
