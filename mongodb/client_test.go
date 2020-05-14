@@ -131,7 +131,7 @@ func TestMgoClient(t *testing.T)  {
 		assert.Nil(t, err)
 		assert.True(t, res)
 	})
-	t.Run("UpdateWithFilter", func(t *testing.T) {
+	t.Run("UpdateOneWithFilter", func(t *testing.T) {
 		guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgcoll),"UpdateOne",
 			func(_ *mongo.Collection, ctx context.Context, filter interface{}, update interface{},
 				opts ...*options.UpdateOptions) (*mongo.UpdateResult, error){
