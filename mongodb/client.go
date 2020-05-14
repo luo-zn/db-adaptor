@@ -27,8 +27,13 @@ func (m *MgoClient) connect(opt map[string]interface{}) error {
 	}
 	ctxTimeout, ok := opt["ctx_timeout"].(time.Duration)
 	if !ok {
-		ctxTimeout = 20 * time.Second
+		ctxTimeout = 40 * time.Second
 	}
+	socketTimeout, ok := opt["sockettimeout"].(time.Duration)
+	if !ok{
+		socketTimeout = 30 * time.Minute
+	}
+	clientOpt.SocketTimeout = &socketTimeout
 	ctx, cancel := context.WithTimeout(context.Background(), ctxTimeout)
 	defer cancel() // bug may happen
 	if client, err := mongo.Connect(ctx, clientOpt); err == nil {
@@ -139,12 +144,16 @@ func (m *MgoClient) Update(tb string, e bases.Entity) (bool, error) {
 
 func (m *MgoClient) UpdateOneWithFilter(tb string, filter map[string]interface{}, e bases.Entity) (bool, error) {
 	defer bases.Recover()
-	mp, er := bases.Entity2Map(e)
-	if er != nil {
-		return false, er
+	//mp, er := bases.Entity2Map(e)
+	//if er != nil {
+	//	return false, er
+	//}
+	//delete(mp, "_id")
+	//update, _ := bson.Marshal(bson.M{"$set": mp})
+	update, er1 := bson.Marshal(SetWrapper{Set: e})
+	if er1 != nil {
+		return false, er1
 	}
-	delete(mp, "_id")
-	update, _ := bson.Marshal(bson.M{"$set": mp})
 	res, err := m.getCollection(e.DataBase(), tb).UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return false, err
