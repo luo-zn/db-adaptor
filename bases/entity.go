@@ -6,6 +6,7 @@ type Entity interface {
 	DataBase() string
 }
 
+//bError is a Base Error.
 type bError struct {
 	arg string
 }

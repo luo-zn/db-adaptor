@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"log"
 	"reflect"
 	"testing"
 	"time"
@@ -36,92 +37,124 @@ func getMgoClient() *MgoClient {
 	return mg
 }
 
-func TestMgoClient_Connect(t *testing.T) {
+
+func TestMgoClient(t *testing.T)  {
 	var mgc *mongo.Client
-	guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgc),"Ping",
-		func(_ *mongo.Client, ctx context.Context, rp *readpref.ReadPref) error{
-			return nil
-	})
-	defer guard.Unpatch()
+	var mgcoll *mongo.Collection
 	mg := getMgoClient()
-	err := mg.client.Ping(context.TODO(), readpref.SecondaryPreferred())
-	assert.Nil(t, err)
-	assert.NotEmpty(t, mg.client)
-	assert.Nil(t, mg.Close())
-}
-
-func TestMgoClient_getCollection(t *testing.T) {
-	mg := getMgoClient()
-	col := mg.getCollection("testDB", "user")
-	assert.NotNil(t, col)
-	assert.Equal(t, col.Name(), "user")
-}
-
-func TestMgoClient_Create(t *testing.T) {
-	var mgc *mongo.Collection
-	guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgc),"InsertOne",
-		func(_ *mongo.Collection, ctx context.Context, document interface{},opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error){
-			return &mongo.InsertOneResult{InsertedID:uid}, nil
-		})
-	defer guard.Unpatch()
 	u := &User{Username: "testUser", Nickname: "testNickname", ID: uid}
-	mg := getMgoClient()
-	res, err := mg.Create("user", u)
-	assert.NotNil(t, res)
-	assert.Nil(t, err)
-}
 
-func TestMgoClient_FindOne(t *testing.T) {
-	var mgc *mongo.SingleResult
-	guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgc),"Decode",
-		func(_ *mongo.SingleResult, v interface{}) error{
-			obj, ok :=v.(User)
-			if ok{
-				obj.ID = uid
+	t.Run("Connect", func(t *testing.T) {
+		guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgc),"Ping",
+			func(_ *mongo.Client, ctx context.Context, rp *readpref.ReadPref) error{
 				return nil
-			}
-			return bases.Error("Obj is not User struct!")
-		})
-	defer guard.Unpatch()
-	u := &User{Username: "testUser", Nickname: "testNickname"}
-	mg := getMgoClient()
-	_, err := mg.FindOne("user", u)
-	assert.Nil(t, err, "Error %s", err)
-	assert.Equal(t, "testUser", u.Username, "The expected Username is testUser")
-	assert.Equal(t, "testNickname", u.Nickname, "The expected Nickname is testNickname")
-	assert.NotEmpty(t, u.ID, "User id is %s", u.ID)
-}
+			})
+		defer guard.Unpatch()
+		err := mg.client.Ping(context.TODO(), readpref.SecondaryPreferred())
+		assert.Nil(t, err)
+		assert.NotEmpty(t, mg.client)
+		assert.Nil(t, mg.Close())
+	})
+	t.Run("getCollection", func(t *testing.T) {
+		col := mg.getCollection("testDB", "user")
+		assert.NotNil(t, col)
+		assert.Equal(t, col.Name(), "user")
+	})
+	t.Run("Create", func(t *testing.T) {
+		guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgcoll),"InsertOne",
+			func(_ *mongo.Collection, ctx context.Context, document interface{},opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error){
+				return &mongo.InsertOneResult{InsertedID:uid}, nil
+			})
+		defer guard.Unpatch()
+		res, err := mg.Create("user", u)
+		assert.NotNil(t, res)
+		assert.Nil(t, err)
+	})
+	t.Run("FindOne", func(t *testing.T) {
+		var mgc *mongo.SingleResult
+		guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgc),"Decode",
+			func(_ *mongo.SingleResult, v interface{}) error{
+				obj, ok :=v.(*User)
+				if ok{
+					obj.ID = uid
+					return nil
+				}
+				return bases.Error("Obj is not User struct!")
+			})
+		defer guard.Unpatch()
+		_, err := mg.FindOne("user", u)
+		assert.Nil(t, err, "Error %s", err)
+		assert.Equal(t, "testUser", u.Username, "The expected Username is testUser")
+		assert.Equal(t, "testNickname", u.Nickname, "The expected Nickname is testNickname")
+		assert.NotEmpty(t, u.ID, "User id is %s", u.ID)
+	})
+	t.Run("Retrieve", func(t *testing.T) {
+		var mgc *mongo.SingleResult
+		guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgc),"Decode",
+			func(_ *mongo.SingleResult, v interface{}) error{
+				obj, ok :=v.(*User)
+				if ok{
+					obj.ID = uid
+					return nil
+				}
+				return bases.Error("Obj is not User struct!")
+			})
+		defer guard.Unpatch()
+		u.ID = ""
+		_, err := mg.Retrieve("user", u)
+		assert.Nil(t, err, "Error %s", err)
+		assert.Equal(t, u.Username, "testUser", "The expected Username is testUser")
+		assert.Equal(t, u.Nickname, "testNickname", "The expected Nickname is testNickname")
+		assert.NotEmpty(t, u.ID, "User id is %s", u.ID)
+		assert.Equal(t, uid, u.ID, "The expected ID is %s", uid)
+	})
+	t.Run("UpdateOneById", func(t *testing.T) {
+		guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgcoll),"UpdateOne",
+			func(_ *mongo.Collection, ctx context.Context, filter interface{}, update interface{},
+				opts ...*options.UpdateOptions) (*mongo.UpdateResult, error){
+				return &mongo.UpdateResult{MatchedCount:1,ModifiedCount:1}, nil
+			})
+		defer guard.Unpatch()
+		res, err := mg.UpdateOneById("user", uid, u)
+		assert.Nil(t, err)
+		assert.True(t, res)
+	})
+	t.Run("Update", func(t *testing.T) {
+		guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgcoll),"UpdateOne",
+			func(_ *mongo.Collection, ctx context.Context, filter interface{}, update interface{},
+				opts ...*options.UpdateOptions) (*mongo.UpdateResult, error){
+				return &mongo.UpdateResult{MatchedCount:1,ModifiedCount:1}, nil
+			})
+		defer guard.Unpatch()
+		res, err := mg.Update("user", u)
+		assert.Nil(t, err)
+		assert.True(t, res)
+	})
+	t.Run("Delete", func(t *testing.T) {
+		guardCon := monkey.Patch(mongo.Connect,
+			func(ctx context.Context, opts ...*options.ClientOptions) (*mongo.Client, error){
+				c, err := mongo.NewClient(opts...)
+				if err != nil {
+					return nil, err
+				}
+				return c, nil
+			})
+		guardDelOne := monkey.PatchInstanceMethod(reflect.TypeOf(mgcoll),"DeleteOne",
+			func(_ *mongo.Collection, ctx context.Context, filter interface{},
+				opts ...*options.DeleteOptions) (*mongo.DeleteResult, error){
+				log.Print("monkey.DeleteOne=")
+				return &mongo.DeleteResult{DeletedCount:1}, nil
+			})
+		guardDiscon := monkey.PatchInstanceMethod(reflect.TypeOf(mgc),"Disconnect",
+			func(_ *mongo.Client, ctx context.Context) error{
+				return  nil
+			})
+		defer guardCon.Unpatch()
+		defer guardDiscon.Unpatch()
+		defer guardDelOne.Unpatch()
 
-func TestMgoClient_Retrieve(t *testing.T) {
-	u := &User{Username: "testUser", Nickname: "testNickname"}
-	mg := getMgoClient()
-	mg.FindOne("user", u)
-	assert.Equal(t, u.Username, "testUser", "The expected Username is testUser")
-	assert.Equal(t, u.Nickname, "testNickname", "The expected Nickname is testNickname")
-	assert.NotEmpty(t, u.ID, "User id is %s", u.ID)
-	assert.Equal(t, uid, u.ID, "The expected ID is %s", uid)
-}
-
-func TestMgoClient_UpdateOneById(t *testing.T) {
-	u := &User{Username: "testUser", Nickname: "testNickname"}
-	mg := getMgoClient()
-	res, err := mg.UpdateOneById("user", uid, u)
-	assert.Nil(t, err)
-	assert.True(t, res)
-}
-
-func TestMgoClient_Update(t *testing.T) {
-	u := &User{Username: "testUser", Nickname: "testNickname", ID: uid}
-	mg := getMgoClient()
-	res, err := mg.Update("user", u)
-	assert.Nil(t, err)
-	assert.True(t, res)
-}
-
-func TestMgoClient_Delete(t *testing.T) {
-	u := &User{Username: "testUser", Nickname: "testNickname", ID: uid}
-	mg := getMgoClient()
-	res, err := mg.Delete("user", u)
-	assert.Nil(t, err)
-	assert.True(t, res)
+		res, err := mg.Delete("user", u)
+		assert.Nil(t, err)
+		assert.True(t, res)
+	})
 }
