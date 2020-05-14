@@ -5,7 +5,7 @@ db-adaptor使用例子
 ```go
 package models
 
-import "github.com/luo-zn/db-adaptor"
+import "models/global"
 
 // baseModel  defined common properties.
 type baseModel struct {
