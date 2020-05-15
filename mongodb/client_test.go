@@ -61,11 +61,11 @@ func TestMgoClient(t *testing.T) {
 		assert.Equal(t, col.Name(), "user")
 	})
 	t.Run("Create", func(t *testing.T) {
-		//guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgcoll),"InsertOne",
-		//	func(_ *mongo.Collection, ctx context.Context, document interface{},opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error){
-		//		return &mongo.InsertOneResult{InsertedID:uid}, nil
-		//	})
-		//defer guard.Unpatch()
+		guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgcoll),"InsertOne",
+			func(_ *mongo.Collection, ctx context.Context, document interface{},opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error){
+				return &mongo.InsertOneResult{InsertedID:uid}, nil
+			})
+		defer guard.Unpatch()
 		res, err := mg.Create("user", u)
 		assert.NotNil(t, res)
 		assert.Nil(t, err)
