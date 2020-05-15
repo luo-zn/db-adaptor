@@ -31,7 +31,7 @@ func (m *MgoClient) connect(opt map[string]interface{}) error {
 		ctxTimeout = 40 * time.Second
 	}
 	socketTimeout, ok := opt["sockettimeout"].(time.Duration)
-	if !ok{
+	if !ok {
 		socketTimeout = 30 * time.Minute
 	}
 	clientOpt.SocketTimeout = &socketTimeout
@@ -153,7 +153,7 @@ func (m *MgoClient) Update(tb string, f bases.Entity, e bases.Entity) (bool, err
 		return false, er1
 	}
 	filter, er2 := bson.Marshal(f)
-	if er2 != nil{
+	if er2 != nil {
 		return false, er2
 	}
 	res, err := m.getCollection(e.DataBase(), tb).UpdateOne(context.TODO(), filter, update)
@@ -185,21 +185,17 @@ func (m *MgoClient) UpdateOneWithFilter(tb string, filter map[string]interface{}
 }
 
 //Count call mongo.Collection.CountDocuments to count documents, bases.Entity instance as filter parameter.
-func (m *MgoClient) Count(tb string, f bases.Entity) (int64, error){
+func (m *MgoClient) Count(tb string, f bases.Entity) (int64, error) {
 	defer bases.Recover()
 	filter, er1 := bson.Marshal(f)
-	if er1 != nil{
+	if er1 != nil {
 		return 0, er1
 	}
-	res,err := m.getCollection(f.DataBase(), tb).CountDocuments(context.TODO(), filter)
-	return res,err
+	res, err := m.getCollection(f.DataBase(), tb).CountDocuments(context.TODO(), filter)
+	return res, err
 }
 
 //Delete call MgoClient.DeleteOne.
 func (m *MgoClient) Delete(tb string, e bases.Entity) (bool, error) {
 	return m.DeleteOne(tb, e)
 }
-
-
-
-
