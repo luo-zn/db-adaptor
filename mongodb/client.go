@@ -118,23 +118,31 @@ func (m *MgoClient) Retrieve(tb string, filter bases.Entity) (interface{}, error
 	return m.FindOne(tb, filter)
 }
 
-func (m *MgoClient) Update(tb string, e bases.Entity) (bool, error) {
+func (m *MgoClient) Update(tb string, f bases.Entity, e bases.Entity) (bool, error) {
 	defer bases.Recover()
-	mp, er := bases.Entity2Map(e)
-	if er != nil {
-		return false, er
-	}
-	ids, ok := mp["id"].(string)
-	if !ok {
-		return false, bases.Error("ID is not a string.")
-	}
+	//mp, er := bases.Entity2Map(e)
+	//if er != nil {
+	//	return false, er
+	//}
+	//ids, ok := mp["id"].(string)
+	//if !ok {
+	//	return false, bases.Error("ID is not a string.")
+	//}
 	//id, er1 := primitive.ObjectIDFromHex(ids)
 	//if er1 != nil {
 	//	return false, er1
 	//}
-	filter := bson.M{"_id": ids}
-	delete(mp, "id")
-	update, _ := bson.Marshal(bson.M{"$set": mp})
+	//filter := bson.M{"_id": ids}
+	//delete(mp, "id")
+	//update, _ := bson.Marshal(bson.M{"$set": mp})
+	update, er1 := bson.Marshal(SetWrapper{Set: e})
+	if er1 != nil {
+		return false, er1
+	}
+	filter, er2 := bson.Marshal(f)
+	if er2 != nil{
+		return false, er2
+	}
 	res, err := m.getCollection(e.DataBase(), tb).UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return false, err

@@ -127,7 +127,8 @@ func TestMgoClient(t *testing.T)  {
 				return &mongo.UpdateResult{MatchedCount:1,ModifiedCount:1}, nil
 			})
 		defer guard.Unpatch()
-		res, err := mg.Update("user", u)
+		upd := u
+		res, err := mg.Update("user", u, upd)
 		assert.Nil(t, err)
 		assert.True(t, res)
 	})

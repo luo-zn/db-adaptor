@@ -26,7 +26,7 @@ func (MysqlClient) Retrieve(tb string, filter bases.Entity) (e interface{}, err 
 	panic("implement me")
 }
 
-func (MysqlClient) Update(tb string, e bases.Entity) (bool, error) {
+func (MysqlClient) Update(tb string, f bases.Entity, e bases.Entity) (bool, error) {
 	panic("implement me")
 }
 
