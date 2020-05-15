@@ -146,6 +146,12 @@ func TestMgoClient(t *testing.T)  {
 		assert.True(t, res)
 	})
 	t.Run("Count", func(t *testing.T) {
+		guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgcoll),"CountDocuments",
+			func(_ *mongo.Collection, ctx context.Context, filter interface{},
+				opts ...*options.CountOptions) (int64, error){
+				return 1, nil
+			})
+		defer guard.Unpatch()
 		res, err := mg.Count("user", u)
 		assert.NotNil(t, res)
 		assert.Greaterf(t,res,int64(0), "")
