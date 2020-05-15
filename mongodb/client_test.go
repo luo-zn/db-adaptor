@@ -168,7 +168,7 @@ func TestMgoClient(t *testing.T) {
 		guardDelOne := monkey.PatchInstanceMethod(reflect.TypeOf(mgcoll), "DeleteOne",
 			func(_ *mongo.Collection, ctx context.Context, filter interface{},
 				opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
-				log.Print("monkey.DeleteOne=")
+				log.Print("calling monkey.DeleteOne")
 				return &mongo.DeleteResult{DeletedCount: 1}, nil
 			})
 		guardDiscon := monkey.PatchInstanceMethod(reflect.TypeOf(mgc), "Disconnect",
