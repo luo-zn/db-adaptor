@@ -9,6 +9,7 @@ type DBClient interface {
 	Retrieve(tb string, filter bases.Entity) (interface{}, error)
 	Update(tb string, filter bases.Entity, e bases.Entity) (bool, error)
 	UpdateOneWithFilter(tb string, filter map[string]interface{}, e bases.Entity) (bool, error)
+	Count(tb string, filter bases.Entity) (int64, error)
 	Delete(tb string, e bases.Entity) (bool, error)
 	Close() error
 }

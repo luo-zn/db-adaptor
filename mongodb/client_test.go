@@ -62,11 +62,11 @@ func TestMgoClient(t *testing.T)  {
 		assert.Equal(t, col.Name(), "user")
 	})
 	t.Run("Create", func(t *testing.T) {
-		guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgcoll),"InsertOne",
-			func(_ *mongo.Collection, ctx context.Context, document interface{},opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error){
-				return &mongo.InsertOneResult{InsertedID:uid}, nil
-			})
-		defer guard.Unpatch()
+		//guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgcoll),"InsertOne",
+		//	func(_ *mongo.Collection, ctx context.Context, document interface{},opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error){
+		//		return &mongo.InsertOneResult{InsertedID:uid}, nil
+		//	})
+		//defer guard.Unpatch()
 		res, err := mg.Create("user", u)
 		assert.NotNil(t, res)
 		assert.Nil(t, err)
@@ -145,6 +145,12 @@ func TestMgoClient(t *testing.T)  {
 		assert.Nil(t, err)
 		assert.True(t, res)
 	})
+	t.Run("Count", func(t *testing.T) {
+		res, err := mg.Count("user", u)
+		assert.NotNil(t, res)
+		assert.Greaterf(t,res,int64(0), "")
+		assert.Nil(t, err)
+	})
 	t.Run("Delete", func(t *testing.T) {
 		guardCon := monkey.Patch(mongo.Connect,
 			func(ctx context.Context, opts ...*options.ClientOptions) (*mongo.Client, error){
@@ -172,6 +178,5 @@ func TestMgoClient(t *testing.T)  {
 		assert.Nil(t, err)
 		assert.True(t, res)
 	})
-
 	mg.Close()
 }

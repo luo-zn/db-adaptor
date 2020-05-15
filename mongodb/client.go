@@ -169,6 +169,20 @@ func (m *MgoClient) UpdateOneWithFilter(tb string, filter map[string]interface{}
 	return res.ModifiedCount == 1, nil
 }
 
+func (m *MgoClient) Count(tb string, f bases.Entity) (int64, error){
+	defer bases.Recover()
+	filter, er1 := bson.Marshal(f)
+	if er1 != nil{
+		return 0, er1
+	}
+	res,err := m.getCollection(f.DataBase(), tb).CountDocuments(context.TODO(), filter)
+	return res,err
+}
+
 func (m *MgoClient) Delete(tb string, e bases.Entity) (bool, error) {
 	return m.DeleteOne(tb, e)
 }
+
+
+
+

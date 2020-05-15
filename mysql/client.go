@@ -10,6 +10,10 @@ type MysqlClient struct {
 	Ctx    context.Context
 }
 
+func (MysqlClient) Count(tb string, filter bases.Entity) (int64, error) {
+	panic("implement me")
+}
+
 func (MysqlClient) Connect(opt map[string]interface{}) error {
 	panic("implement me")
 }
