@@ -20,6 +20,7 @@ type MgoClient struct {
 	ctx    context.Context
 }
 
+//connect call mongo.Connect.
 func (m *MgoClient) connect(opt map[string]interface{}) error {
 	clientOpt, er1 := Map2ClientOptions(opt)
 	if er1 != nil {
@@ -43,18 +44,22 @@ func (m *MgoClient) connect(opt map[string]interface{}) error {
 	return nil
 }
 
+//Connect call MgoClient.connect
 func (m *MgoClient) Connect(opt map[string]interface{}) error {
 	return m.connect(opt)
 }
 
+//Close call MgoClient。client.Disconnect
 func (m *MgoClient) Close() error {
 	return m.client.Disconnect(m.ctx)
 }
 
+//getCollection call mongo.Collection.
 func (m *MgoClient) getCollection(db string, tb string) *mongo.Collection {
 	return m.client.Database(db).Collection(tb)
 }
 
+//FindOne call mongo.Collection.FindOne
 func (m *MgoClient) FindOne(tb string, e bases.Entity) (bases.Entity, error) {
 	defer bases.Recover()
 	filter, er1 := bson.Marshal(e)
@@ -68,6 +73,7 @@ func (m *MgoClient) FindOne(tb string, e bases.Entity) (bases.Entity, error) {
 	return e, nil
 }
 
+//UpdateOneById call mongo.Collection.UpdateOne.
 func (m *MgoClient) UpdateOneById(tb string, ids string, u bases.Entity) (bool, error) {
 	defer bases.Recover()
 	update, er1 := bson.Marshal(SetWrapper{Set: u})
@@ -85,6 +91,8 @@ func (m *MgoClient) UpdateOneById(tb string, ids string, u bases.Entity) (bool, 
 	return res.MatchedCount == 1 || res.ModifiedCount == 1, nil
 }
 
+//DeleteOne call mongo.Collection.DeleteOne.
+//The e parameter is type of bases.Entity.
 func (m *MgoClient) DeleteOne(tb string, e bases.Entity) (bool, error) {
 	defer bases.Recover()
 	f, er1 := bson.Marshal(e)
@@ -98,6 +106,8 @@ func (m *MgoClient) DeleteOne(tb string, e bases.Entity) (bool, error) {
 	return res.DeletedCount == 1, nil
 }
 
+//Create call mongo.Collection.InsertOne.
+//The e parameter is type of bases.Entity.
 func (m *MgoClient) Create(tb string, e bases.Entity) (interface{}, error) {
 	var err error
 	defer bases.Recover()
@@ -114,10 +124,13 @@ func (m *MgoClient) Create(tb string, e bases.Entity) (interface{}, error) {
 	return "", err
 }
 
+//Retrieve call .MgoClient.FindOne
 func (m *MgoClient) Retrieve(tb string, filter bases.Entity) (interface{}, error) {
 	return m.FindOne(tb, filter)
 }
 
+//Update call mongo.Collection.UpdateOne.
+//The filter parameter is type of bases.Entity, update parameter is type of  bases.Entity
 func (m *MgoClient) Update(tb string, f bases.Entity, e bases.Entity) (bool, error) {
 	defer bases.Recover()
 	//mp, er := bases.Entity2Map(e)
@@ -150,6 +163,8 @@ func (m *MgoClient) Update(tb string, f bases.Entity, e bases.Entity) (bool, err
 	return res.ModifiedCount == 1, nil
 }
 
+//UpdateOneWithFilter call mongo.Collection.UpdateOne.
+//filter parameter is type of map[string]interface{}, update parameter is type of  bases.Entity
 func (m *MgoClient) UpdateOneWithFilter(tb string, filter map[string]interface{}, e bases.Entity) (bool, error) {
 	defer bases.Recover()
 	//mp, er := bases.Entity2Map(e)
@@ -169,6 +184,7 @@ func (m *MgoClient) UpdateOneWithFilter(tb string, filter map[string]interface{}
 	return res.ModifiedCount == 1, nil
 }
 
+//Count call mongo.Collection.CountDocuments to count documents, bases.Entity instance as filter parameter.
 func (m *MgoClient) Count(tb string, f bases.Entity) (int64, error){
 	defer bases.Recover()
 	filter, er1 := bson.Marshal(f)
@@ -179,6 +195,7 @@ func (m *MgoClient) Count(tb string, f bases.Entity) (int64, error){
 	return res,err
 }
 
+//Delete call MgoClient.DeleteOne.
 func (m *MgoClient) Delete(tb string, e bases.Entity) (bool, error) {
 	return m.DeleteOne(tb, e)
 }
