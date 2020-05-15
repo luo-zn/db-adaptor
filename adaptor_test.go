@@ -19,9 +19,8 @@ func TestNewDbAdaptor2MgoClient(t *testing.T) {
 		assert.Equal(t, adap.Opt.Uri, uri)
 		assert.Equal(t, adap.Opt.DBType, "mongodb")
 		uType := reflect.TypeOf(adap.DbC)
-		assert.Implements(t,(*DBClient)(nil), adap.DbC,"DbAdaptor.Dbc does not implement DBClient!")
-		assert.Equal(t,"*mongodb.MgoClient", uType.String(), "DbAdaptor.Dbc does not *mongodb.MgoClient!")
+		assert.Implements(t, (*DBClient)(nil), adap.DbC, "DbAdaptor.Dbc does not implement DBClient!")
+		assert.Equal(t, "*mongodb.MgoClient", uType.String(), "DbAdaptor.Dbc does not *mongodb.MgoClient!")
 	})
-
 
 }

@@ -41,9 +41,17 @@ func getMgoClient() *MgoClient {
 func TestMgoClient(t *testing.T) {
 	var mgc *mongo.Client
 	var mgcoll *mongo.Collection
+	guardCon := monkey.Patch(mongo.Connect,
+		func(ctx context.Context, opts ...*options.ClientOptions) (*mongo.Client, error) {
+			c, err := mongo.NewClient(opts...)
+			if err != nil {
+				return nil, err
+			}
+			log.Print("calling monkey.Connect")
+			return c, nil
+		})
 	mg := getMgoClient()
 	u := &User{Username: "testUser", Nickname: "testNickname", ID: uid}
-
 	t.Run("Connect", func(t *testing.T) {
 		guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgc), "Ping",
 			func(_ *mongo.Client, ctx context.Context, rp *readpref.ReadPref) error {
@@ -61,9 +69,9 @@ func TestMgoClient(t *testing.T) {
 		assert.Equal(t, col.Name(), "user")
 	})
 	t.Run("Create", func(t *testing.T) {
-		guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgcoll),"InsertOne",
-			func(_ *mongo.Collection, ctx context.Context, document interface{},opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error){
-				return &mongo.InsertOneResult{InsertedID:uid}, nil
+		guard := monkey.PatchInstanceMethod(reflect.TypeOf(mgcoll), "InsertOne",
+			func(_ *mongo.Collection, ctx context.Context, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
+				return &mongo.InsertOneResult{InsertedID: uid}, nil
 			})
 		defer guard.Unpatch()
 		res, err := mg.Create("user", u)
@@ -157,31 +165,23 @@ func TestMgoClient(t *testing.T) {
 		assert.Nil(t, err)
 	})
 	t.Run("Delete", func(t *testing.T) {
-		guardCon := monkey.Patch(mongo.Connect,
-			func(ctx context.Context, opts ...*options.ClientOptions) (*mongo.Client, error) {
-				c, err := mongo.NewClient(opts...)
-				if err != nil {
-					return nil, err
-				}
-				return c, nil
-			})
-		guardDelOne := monkey.PatchInstanceMethod(reflect.TypeOf(mgcoll), "DeleteOne",
+		//var mgcolle *mongo.Collection
+		guardDelOne := monkey.PatchInstanceMethod(reflect.TypeOf(&mongo.Collection{}), "DeleteOne",
 			func(_ *mongo.Collection, ctx context.Context, filter interface{},
 				opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
-				log.Print("calling monkey.DeleteOne")
+				log.Print("calling monkey.DeleteOne", filter)
 				return &mongo.DeleteResult{DeletedCount: 1}, nil
 			})
 		guardDiscon := monkey.PatchInstanceMethod(reflect.TypeOf(mgc), "Disconnect",
 			func(_ *mongo.Client, ctx context.Context) error {
 				return nil
 			})
-		defer guardCon.Unpatch()
 		defer guardDiscon.Unpatch()
 		defer guardDelOne.Unpatch()
-
 		res, err := mg.Delete("user", u)
 		assert.Nil(t, err)
 		assert.True(t, res)
 	})
+	defer guardCon.Unpatch()
 	mg.Close()
 }
