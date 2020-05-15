@@ -2,6 +2,7 @@ package db_adaptor
 
 import (
 	"github.com/stretchr/testify/assert"
+	"reflect"
 	"testing"
 )
 
@@ -13,14 +14,14 @@ func TestNewDbAdaptor(t *testing.T) {
 }
 
 func TestNewDbAdaptor2MgoClient(t *testing.T) {
-	adap := NewDbAdaptor(&AdaptorOptions{Uri: uri})
-	assert.Equal(t, adap.Opt.Uri, uri)
-	assert.Equal(t, adap.Opt.DBType, "mongodb")
-	client := adap.DbC
-	t.Log(client)
-	//uType := reflect.TypeOf(adap.DbC)
-	//for i := 0; i < uType.NumField(); i++ {
-	//	t.Log(uType.Field(i))
-	//}
-	t.Log(adap)
+	t.Run("MgoClient", func(t *testing.T) {
+		adap := NewDbAdaptor(&AdaptorOptions{Uri: uri})
+		assert.Equal(t, adap.Opt.Uri, uri)
+		assert.Equal(t, adap.Opt.DBType, "mongodb")
+		uType := reflect.TypeOf(adap.DbC)
+		assert.Implements(t,(*DBClient)(nil), adap.DbC,"DbAdaptor.Dbc does not implement DBClient!")
+		assert.Equal(t,"*mongodb.MgoClient", uType.String(), "DbAdaptor.Dbc does not *mongodb.MgoClient!")
+	})
+
+
 }
