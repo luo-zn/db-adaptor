@@ -7,7 +7,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 	"time"
 )
 
@@ -101,9 +100,7 @@ func (m *MgoClient) DeleteOne(tb string, e bases.Entity) (bool, error) {
 		return false, er1
 	}
 	coll := m.getCollection(e.DataBase(), tb)
-	log.Print("coll=", coll)
 	res, err := coll.DeleteOne(context.TODO(), f)
-	log.Print("DeleteOne=", res, err)
 	if err != nil {
 		return false, err
 	}
