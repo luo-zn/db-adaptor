@@ -61,7 +61,6 @@ func TestMgoClient(t *testing.T) {
 		err := mg.client.Ping(context.TODO(), readpref.SecondaryPreferred())
 		assert.Nil(t, err)
 		assert.NotEmpty(t, mg.client)
-		assert.Nil(t, mg.Close())
 	})
 	t.Run("getCollection", func(t *testing.T) {
 		col := mg.getCollection("testDB", "user")
@@ -165,23 +164,17 @@ func TestMgoClient(t *testing.T) {
 		assert.Nil(t, err)
 	})
 	t.Run("Delete", func(t *testing.T) {
-		//var mgcolle *mongo.Collection
-		guardDelOne := monkey.PatchInstanceMethod(reflect.TypeOf(&mongo.Collection{}), "DeleteOne",
+		guardDelOne := monkey.PatchInstanceMethod(reflect.TypeOf(mgcoll), "DeleteOne",
 			func(_ *mongo.Collection, ctx context.Context, filter interface{},
 				opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
 				log.Print("calling monkey.DeleteOne", filter)
 				return &mongo.DeleteResult{DeletedCount: 1}, nil
 			})
-		guardDiscon := monkey.PatchInstanceMethod(reflect.TypeOf(mgc), "Disconnect",
-			func(_ *mongo.Client, ctx context.Context) error {
-				return nil
-			})
-		defer guardDiscon.Unpatch()
 		defer guardDelOne.Unpatch()
 		res, err := mg.Delete("user", u)
 		assert.Nil(t, err)
 		assert.True(t, res)
 	})
 	defer guardCon.Unpatch()
-	mg.Close()
+	//mg.Close()
 }
